@@ -1,0 +1,56 @@
+/*
+    Projeto Ideação
+    Oficina: Iniciação à Automação - Irrigação Inteligente
+    Gestão: 2022/2023
+*/
+
+bool leituradoSensor;
+bool leituraAnterior;
+
+void setup() {
+  
+  //Porta do sensor de umidade
+  pinMode(8, INPUT);
+
+  //Porta do atuador (relé)
+  pinMode(12, OUTPUT);
+  
+  //Porta de cada LED
+  pinMode(5, OUTPUT);  //LED vermelho
+  pinMode(6, OUTPUT);  //LED amarelo
+  pinMode(7, OUTPUT);  //LED verde
+}
+
+//Funcionamento do sistema
+void loop() {
+
+  leituradoSensor = digitalRead(8);  //identificação do estado do solo
+
+  if (leituradoSensor == HIGH) {
+     //No estado seco
+     digitalWrite(5, HIGH);  //LED vermelho acende
+     digitalWrite(7, LOW);   //LED verde apaga
+  } else {
+     //No estado úmido
+     digitalWrite(5, LOW);   //LED vermelho apaga
+     digitalWrite(7, HIGH);  //LED verde acende
+  }
+
+  //Entrando no estado seco  
+  if (leituradoSensor && !leituraAnterior) {
+     delay(5000); //Espaço de 5 segundos que evita má avaliação do estado do solo
+     digitalWrite(5, LOW);   //LED vermelho apaga
+     digitalWrite(6, HIGH);  //LED amarelo acende
+
+     while (digitalRead(8)) {
+        digitalWrite(12, HIGH);     //Aciona o relé liberando a água
+        delay(500);                //Mantém o relé acionado por meio segundo
+        digitalWrite(12, LOW);    //Desliga o relé impedindo a passagem de água
+
+        delay(10000);  //Aguarda 10 segundos e reavalia o estado do solo 
+     }
+     digitalWrite(6, LOW);  //LED amarelo apaga
+  }
+  
+  leituraAnterior = leituradoSensor;
+}
